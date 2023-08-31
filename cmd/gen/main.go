@@ -3,48 +3,59 @@ package main
 import (
 	"encoding/gob"
 	"encoding/json"
+	"flag"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/jdkato/gnols/internal/stdlib"
 )
 
-const stdlib = "/Users/jdkato/Documents/Code/Gno/gno/gnovm/stdlibs"
-const stdpkg = "/Users/jdkato/Documents/Code/Gno/gno/examples/gno.land/p/demo"
-
-type Symbol struct {
-	Name      string
-	Doc       string
-	Signature string
-	Kind      string
-}
-
-type Package struct {
-	Name    string
-	Symbols []Symbol
-}
-
 func main() {
-	var pkgs []Package
+	hd, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	rootDir := flag.String(
+		"root-dir", filepath.Join(hd, "gno"),
+		"Root of the gno repository, to fetch examples and standard libraries.",
+	)
+	flag.Parse()
 
-	for _, dir := range []string{stdlib, stdpkg} {
+	dirs := [...]string{
+		filepath.Join(*rootDir, "examples"),
+		filepath.Join(*rootDir, "gnovm/stdlibs"),
+	}
+
+	var pkgs []stdlib.Package
+
+	for _, dir := range dirs {
 		for _, lib := range walkLib(dir) {
-			symbols := []Symbol{}
+			symbols := []stdlib.Symbol{}
 			for _, file := range walkPkg(lib) {
 				symbols = append(symbols, getSymbols(file)...)
 			}
 
-			pkgs = append(pkgs, Package{
-				Name:    filepath.Base(lib),
-				Symbols: symbols,
+			// convert to import path:
+			// get path relative to dir, and convert separators to slashes.
+			ip := strings.ReplaceAll(
+				strings.TrimPrefix(lib, dir+string(filepath.Separator)),
+				string(filepath.Separator), "/",
+			)
+
+			pkgs = append(pkgs, stdlib.Package{
+				Name:       filepath.Base(lib),
+				ImportPath: ip,
+				Symbols:    symbols,
 			})
 		}
 	}
 
-	//saveSymbols(pkgs)
-	enmbedSymbols(pkgs)
+	// saveSymbols(pkgs)
+	embedSymbols(pkgs)
 }
 
 func walkLib(path string) []string {
@@ -81,8 +92,8 @@ func walkPkg(path string) []string {
 	return files
 }
 
-func getSymbols(source string) []Symbol {
-	var symbols []Symbol
+func getSymbols(source string) []stdlib.Symbol {
+	var symbols []stdlib.Symbol
 
 	// Create a FileSet to work with.
 	fset := token.NewFileSet()
@@ -103,7 +114,7 @@ func getSymbols(source string) []Symbol {
 	ast.FileExports(file)
 
 	ast.Inspect(file, func(n ast.Node) bool {
-		var found []Symbol
+		var found []stdlib.Symbol
 
 		switch n.(type) {
 		case *ast.FuncDecl:
@@ -122,19 +133,19 @@ func getSymbols(source string) []Symbol {
 	return symbols
 }
 
-func saveSymbols(pkgs []Package) {
+func saveSymbols(pkgs []stdlib.Package) {
 	found, err := json.MarshalIndent(pkgs, "", " ")
 	if err != nil {
 		panic(err)
 	}
 
-	err = os.WriteFile("../../internal/stdlib/stdlib.json", found, 0644)
+	err = os.WriteFile("../../internal/stdlib/stdlib.json", found, 0o644)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func enmbedSymbols(pkgs []Package) {
+func embedSymbols(pkgs []stdlib.Package) {
 	dataFile, err := os.Create("../../internal/stdlib/stdlib.gob")
 	if err != nil {
 		panic(err)
@@ -146,13 +157,13 @@ func enmbedSymbols(pkgs []Package) {
 	dataFile.Close()
 }
 
-func declaration(n ast.Node, source string) []Symbol {
+func declaration(n ast.Node, source string) []stdlib.Symbol {
 	sym, _ := n.(*ast.GenDecl)
 
 	for _, spec := range sym.Specs {
 		switch t := spec.(type) {
 		case *ast.TypeSpec:
-			return []Symbol{{
+			return []stdlib.Symbol{{
 				Name:      t.Name.Name,
 				Doc:       sym.Doc.Text(),
 				Signature: strings.Split(source[t.Pos()-1:t.End()-1], " {")[0],
@@ -164,13 +175,13 @@ func declaration(n ast.Node, source string) []Symbol {
 	return nil
 }
 
-func function(n ast.Node, source string) []Symbol {
+func function(n ast.Node, source string) []stdlib.Symbol {
 	sym, _ := n.(*ast.FuncDecl)
 	if sym.Recv == nil {
 		// bufio. (NewReaderSize, ...)
 		//
 		// We will know this and can perform a lookup on the symbol table.
-		return []Symbol{{
+		return []stdlib.Symbol{{
 			Name:      sym.Name.Name,
 			Doc:       sym.Doc.Text(),
 			Signature: strings.Split(source[sym.Pos()-1:sym.End()-1], " {")[0],

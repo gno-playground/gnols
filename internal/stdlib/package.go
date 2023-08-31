@@ -15,8 +15,9 @@ type Symbol struct {
 }
 
 type Package struct {
-	Name    string
-	Symbols []Symbol
+	Name       string
+	ImportPath string
+	Symbols    []Symbol
 }
 
 //go:embed stdlib.gob
