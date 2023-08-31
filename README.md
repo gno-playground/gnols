@@ -1,6 +1,8 @@
 # `gnols`
 
-> **NOTE:** This project is community-maintained (not official) and in early
+> **Note** 
+>
+> This project is community-maintained (not official) and in early
 > development.
 
 The Gno Language Server (`gnols`) is an implementation of the 
