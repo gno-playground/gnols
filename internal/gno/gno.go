@@ -3,6 +3,7 @@ package gno
 import (
 	"errors"
 	"fmt"
+	"go/format"
 	"log/slog"
 	"os/exec"
 
@@ -67,12 +68,11 @@ func NewBinManager(gno, gnokey, formatter string) (*BinManager, error) {
 	}, nil
 }
 
-// Format a Gno file using a user-provided formatter.
+// Format a Gno file using std formatter.
+//
+// TODO: support other tools?
 func (m *BinManager) Format(gnoFile string) ([]byte, error) {
-	if m.gnofmt == "" {
-		return nil, ErrNoGnofmt
-	}
-	return exec.Command(m.gnofmt, gnoFile).CombinedOutput() //nolint:gosec
+	return format.Source([]byte(gnoFile))
 }
 
 // Precompile a Gno package: gno precompile <dir>.

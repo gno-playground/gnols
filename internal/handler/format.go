@@ -23,9 +23,10 @@ func (h *handler) handleTextDocumentFormatting(ctx context.Context, reply jsonrp
 		return noDocFound(params.TextDocument.URI)
 	}
 
-	formatted, err := h.binManager.Format(doc.Path)
+	formatted, err := h.binManager.Format(doc.Content)
 	if err != nil {
-		return err
+		slog.Error("formatting", "error", err, "text", formatted)
+		return reply(ctx, nil, err)
 	}
 
 	slog.Info("formatting", "uri", params.TextDocument.URI)
