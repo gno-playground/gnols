@@ -1,7 +1,7 @@
 # `gnols`
 
 The Gno Language Server (`gnols`) is an implementation of the 
-[Language Server Protocol][1] (LSP) for the [Gno programming][2] language.
+[Language Server Protocol][1] (LSP) for the [Gno programming language][2].
 
 It provides an interface to locally-installed Gno tools (`gno`, `gnokey`, ...)
 with the goal of making it easy to add IDE-like features to any application 
