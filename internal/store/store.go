@@ -6,16 +6,18 @@ import (
 
 	"go.lsp.dev/protocol"
 	"go.lsp.dev/uri"
+
+	cmap "github.com/orcaman/concurrent-map/v2"
 )
 
 // DocumentStore holds all opened documents.
 type DocumentStore struct {
-	documents map[string]*Document
+	documents cmap.ConcurrentMap[string, *Document]
 }
 
 func NewDocumentStore() *DocumentStore {
 	return &DocumentStore{
-		documents: map[string]*Document{},
+		documents: cmap.New[*Document](),
 	}
 }
 
@@ -40,12 +42,12 @@ func (s *DocumentStore) DidOpen(params protocol.DidOpenTextDocumentParams) (*Doc
 		Pgf:     pgf,
 	}
 
-	s.documents[path] = doc
+	s.documents.Set(path, doc)
 	return doc, nil
 }
 
 func (s *DocumentStore) Close(uri protocol.DocumentURI) {
-	delete(s.documents, uri.Filename())
+	s.documents.Remove(uri.Filename())
 }
 
 func (s *DocumentStore) Get(docuri uri.URI) (*Document, bool) {
@@ -53,7 +55,7 @@ func (s *DocumentStore) Get(docuri uri.URI) (*Document, bool) {
 	if err != nil {
 		return nil, false
 	}
-	d, ok := s.documents[path]
+	d, ok := s.documents.Get(path)
 	return d, ok
 }
 

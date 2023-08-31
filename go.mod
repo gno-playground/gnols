@@ -3,6 +3,7 @@ module github.com/jdkato/gnols
 go 1.21.0
 
 require (
+	github.com/orcaman/concurrent-map/v2 v2.0.1
 	go.lsp.dev/jsonrpc2 v0.10.0
 	go.lsp.dev/protocol v0.12.0
 	go.lsp.dev/uri v0.3.0
