@@ -1,4 +1,4 @@
-# gnols
+# `gnols`
 
 > **NOTE:** This project is community-maintained (not official) and in early
 > development.

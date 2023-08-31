@@ -1,0 +1,3 @@
+[Pp]recompile
+[Tt]ooltips
+Gno
