@@ -102,7 +102,7 @@ func (m *BinManager) RunTest(pkg, name string) ([]byte, error) {
 	return cmd.CombinedOutput()
 }
 
-// Make precompiles and builds a Gno package and returns any errors.
+// Lint precompiles and builds a Gno package and returns any errors.
 //
 // In practice, this means:
 //
