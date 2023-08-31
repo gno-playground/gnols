@@ -34,8 +34,8 @@ func pkgFromFile(gnoFile string) string {
 //
 // 1 go build errors
 // ```
-func parseError(doc *store.Document, output, cmd string) ([]GnoError, error) {
-	errors := []GnoError{}
+func parseError(doc *store.Document, output, cmd string) ([]BuildError, error) {
+	errors := []BuildError{}
 
 	matches := errorRe.FindAllStringSubmatch(output, -1)
 	if len(matches) == 0 {
@@ -54,10 +54,7 @@ func parseError(doc *store.Document, output, cmd string) ([]GnoError, error) {
 		}
 		slog.Info("parsing", "line", line, "column", column, "msg", match[4])
 
-		found, err := findError(doc, line, column, match[4])
-		if err != nil {
-			return nil, err
-		}
+		found := findError(doc, line, column, match[4])
 		found.Tool = cmd
 
 		errors = append(errors, found)
@@ -68,7 +65,7 @@ func parseError(doc *store.Document, output, cmd string) ([]GnoError, error) {
 
 // findError finds the error in the document, shifting the line and column
 // numbers to account for the header information in the generated Go file.
-func findError(doc *store.Document, line, col int, msg string) (GnoError, error) {
+func findError(doc *store.Document, line, col int, msg string) BuildError {
 	msg = strings.TrimSpace(msg)
 
 	// Error messages are of the form:
@@ -86,7 +83,7 @@ func findError(doc *store.Document, line, col int, msg string) (GnoError, error)
 	// +1 for zero-indexing.
 	shiftedLine := line - 4
 
-	shiftedErr := GnoError{
+	shiftedErr := BuildError{
 		Path: doc.Path,
 		Line: shiftedLine,
 		Span: []int{0, 0},
@@ -103,7 +100,7 @@ func findError(doc *store.Document, line, col int, msg string) (GnoError, error)
 			if tokRe.MatchString(l) {
 				shiftedErr.Line = i + 1
 				shiftedErr.Span = []int{col, col + len(token)}
-				return shiftedErr, nil
+				return shiftedErr
 			}
 		}
 	}
@@ -113,5 +110,5 @@ func findError(doc *store.Document, line, col int, msg string) (GnoError, error)
 	shiftedErr.Line = line
 	shiftedErr.Span = []int{1, len(doc.Lines[line-1])}
 
-	return shiftedErr, nil
+	return shiftedErr
 }

@@ -24,8 +24,8 @@ type BinManager struct {
 	gnofmt string
 }
 
-// GnoError is an error returned by the `gno build` command.
-type GnoError struct {
+// BuildError is an error returned by the `gno build` command.
+type BuildError struct {
 	Path string
 	Line int
 	Span []int
@@ -72,24 +72,24 @@ func (m *BinManager) Format(gnoFile string) ([]byte, error) {
 	if m.gnofmt == "" {
 		return nil, ErrNoGnofmt
 	}
-	return exec.Command(m.gnofmt, gnoFile).CombinedOutput()
+	return exec.Command(m.gnofmt, gnoFile).CombinedOutput() //nolint:gosec
 }
 
 // Precompile a Gno package: gno precompile <dir>.
 func (m *BinManager) Precompile(gnoDir string) ([]byte, error) {
-	return exec.Command(m.gno, "precompile", gnoDir).CombinedOutput()
+	return exec.Command(m.gno, "precompile", gnoDir).CombinedOutput() //nolint:gosec
 }
 
 // Build a Gno package: gno build <dir>.
 func (m *BinManager) Build(gnoDir string) ([]byte, error) {
-	return exec.Command(m.gno, "build", gnoDir).CombinedOutput()
+	return exec.Command(m.gno, "build", gnoDir).CombinedOutput() //nolint:gosec
 }
 
 // RunTest runs a Gno test:
 //
 // gno test -timeout 30s -run ^TestName$ <pkg_path>
 func (m *BinManager) RunTest(pkg, name string) ([]byte, error) {
-	cmd := exec.Command(
+	cmd := exec.Command( //nolint:gosec
 		m.gno,
 		"test",
 		"-timeout",
@@ -112,7 +112,7 @@ func (m *BinManager) RunTest(pkg, name string) ([]byte, error) {
 // 4. recompute the offsets (.go -> .gno).
 //
 // TODO: is this the best way?
-func (m *BinManager) Lint(doc *store.Document) ([]GnoError, error) {
+func (m *BinManager) Lint(doc *store.Document) ([]BuildError, error) {
 	pkg := pkgFromFile(doc.Path)
 	slog.Info("Lint", "pkg", pkg)
 
