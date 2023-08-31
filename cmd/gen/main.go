@@ -14,15 +14,24 @@ import (
 	"github.com/jdkato/gnols/internal/stdlib"
 )
 
+var buildOutput = "internal/stdlib/stdlib"
+
 func main() {
 	hd, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
+
 	rootDir := flag.String(
 		"root-dir", filepath.Join(hd, "gno"),
 		"Root of the gno repository, to fetch examples and standard libraries.",
 	)
+
+	storageFormat := flag.String(
+		"format", "gob",
+		"Format to save the symbols in; 'gob' or 'json'.",
+	)
+
 	flag.Parse()
 
 	dirs := [...]string{
@@ -54,21 +63,24 @@ func main() {
 		}
 	}
 
-	// saveSymbols(pkgs)
-	embedSymbols(pkgs)
+	saveSymbols(pkgs, *storageFormat)
 }
 
 func walkLib(path string) []string {
 	var libs []string
 
-	filepath.WalkDir(path, func(lib string, d os.DirEntry, err error) error {
+	err := filepath.WalkDir(path, func(lib string, d os.DirEntry, err error) error {
 		if err != nil {
-			panic(err)
+			return err
 		} else if d.IsDir() && lib != path {
 			libs = append(libs, lib)
 		}
 		return nil
 	})
+
+	if err != nil {
+		panic(err)
+	}
 
 	return libs
 }
@@ -76,9 +88,9 @@ func walkLib(path string) []string {
 func walkPkg(path string) []string {
 	var files []string
 
-	filepath.WalkDir(path, func(file string, d os.DirEntry, err error) error {
+	err := filepath.WalkDir(path, func(file string, d os.DirEntry, err error) error {
 		if err != nil {
-			panic(err)
+			return err
 		} else if !d.IsDir() && !strings.Contains(file, "_test") {
 			ext := filepath.Ext(file)
 			if ext != ".gno" {
@@ -88,6 +100,10 @@ func walkPkg(path string) []string {
 		}
 		return nil
 	})
+
+	if err != nil {
+		panic(err)
+	}
 
 	return files
 }
@@ -133,26 +149,38 @@ func getSymbols(source string) []stdlib.Symbol {
 	return symbols
 }
 
-func saveSymbols(pkgs []stdlib.Package) {
+func saveSymbols(pkgs []stdlib.Package, format string) {
+	switch format {
+	case "gob":
+		toGob(pkgs)
+	case "json":
+		toJSON(pkgs)
+	}
+}
+
+func toJSON(pkgs []stdlib.Package) {
 	found, err := json.MarshalIndent(pkgs, "", " ")
 	if err != nil {
 		panic(err)
 	}
 
-	err = os.WriteFile("../../internal/stdlib/stdlib.json", found, 0o644)
+	err = os.WriteFile(buildOutput+".json", found, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func embedSymbols(pkgs []stdlib.Package) {
-	dataFile, err := os.Create("../../internal/stdlib/stdlib.gob")
+func toGob(pkgs []stdlib.Package) {
+	dataFile, err := os.Create(buildOutput + ".gob")
 	if err != nil {
 		panic(err)
 	}
-
 	dataEncoder := gob.NewEncoder(dataFile)
-	dataEncoder.Encode(pkgs)
+
+	err = dataEncoder.Encode(pkgs)
+	if err != nil {
+		panic(err)
+	}
 
 	dataFile.Close()
 }
@@ -161,7 +189,7 @@ func declaration(n ast.Node, source string) []stdlib.Symbol {
 	sym, _ := n.(*ast.GenDecl)
 
 	for _, spec := range sym.Specs {
-		switch t := spec.(type) {
+		switch t := spec.(type) { //nolint:gocritic
 		case *ast.TypeSpec:
 			return []stdlib.Symbol{{
 				Name:      t.Name.Name,
@@ -187,14 +215,14 @@ func function(n ast.Node, source string) []stdlib.Symbol {
 			Signature: strings.Split(source[sym.Pos()-1:sym.End()-1], " {")[0],
 			Kind:      "func",
 		}}
-	} else {
-		// myReader := bufio.NewReaderSize(...)
-		//
-		// We won't know what the type of myReader is ...
-		//
-		//root := sym.Recv.List[0].Type.(*ast.StarExpr).X.(*ast.Ident).Name
-		//fmt.Println(sym.Name.Name, "(", root, ")")
 	}
+
+	// myReader := bufio.NewReaderSize(...)
+	//
+	// We won't know what the type of myReader is ...
+	//
+	// root := sym.Recv.List[0].Type.(*ast.StarExpr).X.(*ast.Ident).Name
+	// fmt.Println(sym.Name.Name, "(", root, ")")
 
 	return nil
 }
