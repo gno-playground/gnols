@@ -35,9 +35,9 @@ TODO.
     </tr>
     <tr>
         <td width="50%">
-          In-editor documentation for any symbol in the Gno standard library.
+          In-editor documentation for all exported symbols in the Gno standard library.
         </td>
-        <td width="50%">Autocomplete for all exported types in the Gno standard library.
+        <td width="50%">Autocomplete for all exported symbols in the Gno standard library.
     </tr>
     <tr>
         <th>Diagnostics</th>
