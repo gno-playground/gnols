@@ -10,6 +10,10 @@ It provides an interface to locally-installed Gno tools (`gno`, `gnokey`, ...)
 with the goal of making it easy to add IDE-like features to any application 
 that supports the Language Server Protocol.
 
+## Installation
+
+TODO.
+
 ## Features
 
 <table>
@@ -60,10 +64,6 @@ that supports the Language Server Protocol.
         </td>
     </tr>
 </table>
-
-## Installation
-
-TODO.
 
 ## Clients
 
