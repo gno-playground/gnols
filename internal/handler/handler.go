@@ -115,6 +115,6 @@ func (h *handler) handleInitialize(ctx context.Context, reply jsonrpc2.Replier, 
 	}, nil)
 }
 
-func (h *handler) handleShutdown(_ context.Context, _ jsonrpc2.Replier, _ jsonrpc2.Request) (err error) {
+func (h *handler) handleShutdown(_ context.Context, _ jsonrpc2.Replier, _ jsonrpc2.Request) error {
 	return h.connPool.Close()
 }

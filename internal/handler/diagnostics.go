@@ -10,12 +10,12 @@ import (
 	"github.com/jdkato/gnols/internal/store"
 )
 
-func (h *handler) notifcationFromGno(ctx context.Context, conn jsonrpc2.Conn, doc *store.Document) (*jsonrpc2.Notification, error) {
+func (h *handler) notifcationFromGno(ctx context.Context, conn jsonrpc2.Conn, doc *store.Document) error {
 	diagnostics, err := h.getDiagnostics(doc)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return nil, conn.Notify(
+	return conn.Notify(
 		ctx,
 		protocol.MethodTextDocumentPublishDiagnostics,
 		&protocol.PublishDiagnosticsParams{
@@ -45,5 +45,4 @@ func (h *handler) getDiagnostics(doc *store.Document) ([]protocol.Diagnostic, er
 
 	slog.Info("diagnostics", "parsed", computed, "count", len(diagnostics))
 	return diagnostics, nil
-
 }

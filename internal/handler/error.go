@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	NoDocumentError = errors.New("no document found")
+	ErrNoDocument = errors.New("no document found")
 )
 
 func noDocFound(uri uri.URI) error {
-	slog.Warn("Could not get document", uri.Filename())
-	return NoDocumentError
+	slog.Warn("Could not get document", "doc", uri.Filename())
+	return ErrNoDocument
 }

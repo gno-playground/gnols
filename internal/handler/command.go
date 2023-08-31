@@ -10,7 +10,7 @@ import (
 	"go.lsp.dev/protocol"
 )
 
-func (h *handler) handleExecuteCommand(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) (err error) {
+func (h *handler) handleExecuteCommand(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) error {
 	var params protocol.ExecuteCommandParams
 
 	if req.Params() == nil {
@@ -20,10 +20,19 @@ func (h *handler) handleExecuteCommand(ctx context.Context, reply jsonrpc2.Repli
 	}
 	slog.Info("execute_command", "command", params.Command)
 
-	switch params.Command {
+	switch params.Command { //nolint:gocritic
 	case "gnols.test":
-		pkg := filepath.Dir(params.Arguments[0].(string))
-		test := params.Arguments[1].(string)
+		file, ok := params.Arguments[0].(string)
+		if !ok {
+			return &jsonrpc2.Error{Code: jsonrpc2.InvalidParams}
+		}
+		pkg := filepath.Dir(file)
+
+		test, ok := params.Arguments[1].(string)
+		if !ok {
+			return &jsonrpc2.Error{Code: jsonrpc2.InvalidParams}
+		}
+
 		h.runTest(pkg, test)
 	}
 

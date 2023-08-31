@@ -10,7 +10,7 @@ import (
 	"go.lsp.dev/protocol"
 )
 
-func (h *handler) handleTextDocumentCompletion(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) (err error) {
+func (h *handler) handleTextDocumentCompletion(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) error {
 	var params protocol.CompletionParams
 
 	if req.Params() == nil {
@@ -27,7 +27,7 @@ func (h *handler) handleTextDocumentCompletion(ctx context.Context, reply jsonrp
 
 	token, err := doc.TokenAt(params.Position)
 	if err != nil {
-		reply(ctx, protocol.Hover{}, err)
+		return reply(ctx, protocol.Hover{}, err)
 	}
 	text := strings.TrimSuffix(strings.TrimSpace(token.Text), ".")
 	slog.Info("completion", "text", text)

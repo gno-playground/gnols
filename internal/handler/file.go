@@ -8,7 +8,7 @@ import (
 	"go.lsp.dev/protocol"
 )
 
-func (h *handler) handleTextDocumentDidOpen(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) (err error) {
+func (h *handler) handleTextDocumentDidOpen(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) error {
 	var params protocol.DidOpenTextDocumentParams
 
 	if err := json.Unmarshal(req.Params(), &params); err != nil {
@@ -20,11 +20,11 @@ func (h *handler) handleTextDocumentDidOpen(ctx context.Context, reply jsonrpc2.
 		return reply(ctx, nil, docErr)
 	}
 
-	notification, err := h.notifcationFromGno(ctx, h.connPool, doc)
-	return reply(ctx, notification, err)
+	notification := h.notifcationFromGno(ctx, h.connPool, doc)
+	return reply(ctx, notification, nil)
 }
 
-func (h *handler) handleTextDocumentDidClose(ctx context.Context, reply jsonrpc2.Replier, _ jsonrpc2.Request) (err error) {
+func (h *handler) handleTextDocumentDidClose(ctx context.Context, reply jsonrpc2.Replier, _ jsonrpc2.Request) error {
 	return reply(
 		ctx,
 		h.connPool.Notify(
@@ -36,7 +36,7 @@ func (h *handler) handleTextDocumentDidClose(ctx context.Context, reply jsonrpc2
 	)
 }
 
-func (h *handler) handleTextDocumentDidSave(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) (err error) {
+func (h *handler) handleTextDocumentDidSave(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) error {
 	var params protocol.DidSaveTextDocumentParams
 
 	if req.Params() == nil {
@@ -50,11 +50,11 @@ func (h *handler) handleTextDocumentDidSave(ctx context.Context, reply jsonrpc2.
 		return noDocFound(params.TextDocument.URI)
 	}
 
-	notification, err := h.notifcationFromGno(ctx, h.connPool, doc)
-	return reply(ctx, notification, err)
+	notification := h.notifcationFromGno(ctx, h.connPool, doc)
+	return reply(ctx, notification, nil)
 }
 
-func (h *handler) handleTextDocumentDidChange(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) (err error) {
+func (h *handler) handleTextDocumentDidChange(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) error {
 	var params protocol.DidChangeTextDocumentParams
 
 	if req.Params() == nil {

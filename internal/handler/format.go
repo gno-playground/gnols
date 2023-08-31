@@ -9,7 +9,7 @@ import (
 	"go.lsp.dev/protocol"
 )
 
-func (h *handler) handleTextDocumentFormatting(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) (err error) {
+func (h *handler) handleTextDocumentFormatting(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) error {
 	var params protocol.DocumentFormattingParams
 
 	if req.Params() == nil {

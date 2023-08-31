@@ -12,7 +12,7 @@ import (
 	"github.com/jdkato/gnols/internal/stdlib"
 )
 
-func (h *handler) handleHover(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) (err error) {
+func (h *handler) handleHover(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) error {
 	var params protocol.DefinitionParams
 
 	if req.Params() == nil {
@@ -28,7 +28,7 @@ func (h *handler) handleHover(ctx context.Context, reply jsonrpc2.Replier, req j
 
 	token, err := doc.TokenAt(params.Position)
 	if err != nil {
-		reply(ctx, protocol.Hover{}, err)
+		return reply(ctx, protocol.Hover{}, err)
 	}
 	text := strings.TrimSpace(token.Text)
 

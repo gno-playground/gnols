@@ -28,12 +28,15 @@ type testFns struct {
 	Benchmarks []testFn
 }
 
-func (h *handler) handleCodeLens(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) (err error) {
+func (h *handler) handleCodeLens(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) error {
 	var params protocol.CodeLensParams
 
 	if req.Params() == nil {
 		return &jsonrpc2.Error{Code: jsonrpc2.InvalidParams}
-	} else if err := json.Unmarshal(req.Params(), &params); err != nil {
+	}
+
+	err := json.Unmarshal(req.Params(), &params)
+	if err != nil {
 		return err
 	}
 	items := []protocol.CodeLens{}
@@ -46,12 +49,9 @@ func (h *handler) handleCodeLens(ctx context.Context, reply jsonrpc2.Replier, re
 	}
 	slog.Info("code_lens", "test", params.TextDocument.URI)
 
-	tAndB, err := testsAndBenchmarks(doc)
-	if err != nil {
-		return err
-	}
-
+	tAndB := testsAndBenchmarks(doc)
 	slog.Info("code_lens", "found", len(tAndB.Tests)+len(tAndB.Benchmarks))
+
 	for _, fn := range tAndB.Tests {
 		items = append(items, protocol.CodeLens{
 			Range: fn.Rng,
@@ -66,7 +66,7 @@ func (h *handler) handleCodeLens(ctx context.Context, reply jsonrpc2.Replier, re
 	return reply(ctx, items, err)
 }
 
-func testsAndBenchmarks(doc *store.Document) (testFns, error) {
+func testsAndBenchmarks(doc *store.Document) testFns {
 	var out testFns
 
 	for _, d := range doc.Pgf.File.Decls {
@@ -88,7 +88,7 @@ func testsAndBenchmarks(doc *store.Document) (testFns, error) {
 		}
 	}
 
-	return out, nil
+	return out
 }
 
 func matchTestFunc(fn *ast.FuncDecl, nameRe *regexp.Regexp, paramID string) bool {
