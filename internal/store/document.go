@@ -32,7 +32,7 @@ func (d *Document) ApplyChanges(changes []protocol.TextDocumentContentChangeEven
 	d.ApplyChangesToAst(d.Path)
 }
 
-func (d *Document) SpanToRange(start, end int) protocol.Range {
+func (d *Document) SpanToRange(start, _ int) protocol.Range {
 	line := 0
 
 	offset := 0

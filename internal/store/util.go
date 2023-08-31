@@ -16,7 +16,6 @@ func uriToPath(docuri uri.URI) (string, error) {
 	}
 
 	if runtime.GOOS == "windows" {
-
 		// In Windows "file:///c:/tmp/foo.md" is parsed to "/c:/tmp/foo.md".
 		// Strip the first character to get a valid path.
 		if strings.Contains(parsed.Path[1:], ":") {
