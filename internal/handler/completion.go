@@ -21,7 +21,7 @@ func (h *handler) handleTextDocumentCompletion(ctx context.Context, reply jsonrp
 
 	doc, ok := h.documents.Get(params.TextDocument.URI)
 	if !ok {
-		return noDocFound(params.TextDocument.URI)
+		return noDocFound(ctx, reply, params.TextDocument.URI)
 	}
 	items := []protocol.CompletionItem{}
 

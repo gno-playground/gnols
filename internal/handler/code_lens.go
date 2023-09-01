@@ -43,7 +43,7 @@ func (h *handler) handleCodeLens(ctx context.Context, reply jsonrpc2.Replier, re
 
 	doc, ok := h.documents.Get(params.TextDocument.URI)
 	if !ok {
-		return noDocFound(params.TextDocument.URI)
+		return noDocFound(ctx, reply, params.TextDocument.URI)
 	} else if !strings.HasSuffix(doc.Path, "_test.gno") {
 		return reply(ctx, items, nil)
 	}

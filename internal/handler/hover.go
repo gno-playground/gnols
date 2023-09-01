@@ -23,7 +23,7 @@ func (h *handler) handleHover(ctx context.Context, reply jsonrpc2.Replier, req j
 
 	doc, ok := h.documents.Get(params.TextDocument.URI)
 	if !ok {
-		return noDocFound(params.TextDocument.URI)
+		return noDocFound(ctx, reply, params.TextDocument.URI)
 	}
 
 	token, err := doc.TokenAt(params.Position)
