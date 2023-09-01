@@ -8,9 +8,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jdkato/gnols/internal/store"
 	"go.lsp.dev/jsonrpc2"
 	"go.lsp.dev/protocol"
+
+	"github.com/jdkato/gnols/internal/store"
 )
 
 var (
@@ -47,27 +48,89 @@ func (h *handler) handleCodeLens(ctx context.Context, reply jsonrpc2.Replier, re
 	} else if !strings.HasSuffix(doc.Path, "_test.gno") {
 		return reply(ctx, items, nil)
 	}
-	slog.Info("code_lens", "test", params.TextDocument.URI)
 
 	tAndB := testsAndBenchmarks(doc)
-	slog.Info("code_lens", "found", len(tAndB.Tests)+len(tAndB.Benchmarks))
 
+	slog.Info(
+		"code_lens",
+		"tests",
+		len(tAndB.Tests),
+		"benchmarks",
+		len(tAndB.Benchmarks),
+	)
+
+	items = append(items, addTestCmds(h.binManager.GnoBin(), doc.Path, tAndB)...)
+	items = append(items, addBenchCmds(h.binManager.GnoBin(), doc.Path, tAndB)...)
+
+	return reply(ctx, items, err)
+}
+
+func addTestCmds(gnoBin, path string, tAndB testFns) []protocol.CodeLens {
+	cmds := []protocol.CodeLens{}
+	if len(tAndB.Tests) == 0 {
+		return cmds
+	}
+
+	cmds = append(cmds, newHeaderCmd(
+		"run package tests",
+		"gnols.test",
+		[]interface{}{gnoBin, path, ""},
+	))
+
+	inFile := []string{}
 	for _, fn := range tAndB.Tests {
-		items = append(items, protocol.CodeLens{
+		inFile = append(inFile, fn.Name)
+		cmds = append(cmds, protocol.CodeLens{
 			Range: fn.Rng,
 			Command: &protocol.Command{
-				Title:   "run test",
-				Command: "gnols.test",
-				Arguments: []interface{}{
-					h.binManager.GnoBin(),
-					doc.Path,
-					fn.Name,
-				},
+				Title:     "run test",
+				Command:   "gnols.test",
+				Arguments: []interface{}{gnoBin, path, fn.Name},
 			},
 		})
 	}
 
-	return reply(ctx, items, err)
+	cmds = append(cmds, newHeaderCmd(
+		"run file tests",
+		"gnols.test",
+		[]interface{}{gnoBin, path, strings.Join(inFile, "|")},
+	))
+
+	return cmds
+}
+
+func addBenchCmds(gnoBin, path string, tAndB testFns) []protocol.CodeLens {
+	cmds := []protocol.CodeLens{}
+	if len(tAndB.Benchmarks) == 0 {
+		return cmds
+	}
+
+	cmds = append(cmds, newHeaderCmd(
+		"run package benchmarks",
+		"gnols.bench",
+		[]interface{}{gnoBin, path, ""},
+	))
+
+	inFile := []string{}
+	for _, fn := range tAndB.Benchmarks {
+		inFile = append(inFile, fn.Name)
+		cmds = append(cmds, protocol.CodeLens{
+			Range: fn.Rng,
+			Command: &protocol.Command{
+				Title:     "run benchmark",
+				Command:   "gnols.bench",
+				Arguments: []interface{}{gnoBin, path, fn.Name},
+			},
+		})
+	}
+
+	cmds = append(cmds, newHeaderCmd(
+		"run file benchmarks",
+		"gnols.bench",
+		[]interface{}{gnoBin, path, strings.Join(inFile, "|")},
+	))
+
+	return cmds
 }
 
 func testsAndBenchmarks(doc *store.Document) testFns {
@@ -114,4 +177,24 @@ func matchTestFunc(fn *ast.FuncDecl, nameRe *regexp.Regexp, paramID string) bool
 
 	name := fields[0].Names[0].Name
 	return name == strings.ToLower(paramID)
+}
+
+func newHeaderCmd(title, cmd string, args []interface{}) protocol.CodeLens {
+	return protocol.CodeLens{
+		Range: protocol.Range{
+			Start: protocol.Position{
+				Line:      0,
+				Character: 0,
+			},
+			End: protocol.Position{
+				Line:      0,
+				Character: 0,
+			},
+		},
+		Command: &protocol.Command{
+			Title:     title,
+			Command:   cmd,
+			Arguments: args,
+		},
+	}
 }
