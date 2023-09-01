@@ -14,7 +14,7 @@ that supports the Language Server Protocol.
 
 ## Installation
 
-TODO.
+- [x] [Sublime Text][3]
 
 ## Features
 
@@ -67,13 +67,6 @@ TODO.
     </tr>
 </table>
 
-## Clients
-
-TODO: tutorials for each client coming soon!
-
-- [ ] Sublime Text
-- [ ] Neovim
-- [ ] JetBrains IDEs
-
 [1]: https://microsoft.github.io/language-server-protocol/
 [2]: https://gno.land/
+[3]: https://github.com/jdkato/LSP-gnols
