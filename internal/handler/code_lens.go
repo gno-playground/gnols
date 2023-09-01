@@ -56,9 +56,13 @@ func (h *handler) handleCodeLens(ctx context.Context, reply jsonrpc2.Replier, re
 		items = append(items, protocol.CodeLens{
 			Range: fn.Rng,
 			Command: &protocol.Command{
-				Title:     "run test",
-				Command:   "gnols.test",
-				Arguments: []interface{}{doc.Path, fn.Name},
+				Title:   "run test",
+				Command: "gnols.test",
+				Arguments: []interface{}{
+					h.binManager.GnoBin(),
+					doc.Path,
+					fn.Name,
+				},
 			},
 		})
 	}

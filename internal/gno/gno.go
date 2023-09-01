@@ -68,6 +68,13 @@ func NewBinManager(gno, gnokey, formatter string) (*BinManager, error) {
 	}, nil
 }
 
+// GnoBin returns the path to the `gno` binary.
+//
+// This is either user-provided or found on the user's PATH.
+func (m *BinManager) GnoBin() string {
+	return m.gno
+}
+
 // Format a Gno file using std formatter.
 //
 // TODO: support other tools?
