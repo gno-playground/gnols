@@ -58,6 +58,6 @@ func symbolToKind(symbol string) protocol.CompletionItemKind {
 	case "package":
 		return protocol.CompletionItemKindModule
 	default:
-		return protocol.CompletionItemKindText
+		return protocol.CompletionItemKindValue
 	}
 }
