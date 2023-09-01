@@ -17,7 +17,7 @@ func (h *handler) handleTextDocumentDidOpen(ctx context.Context, reply jsonrpc2.
 
 	doc, docErr := h.documents.DidOpen(params)
 	if docErr != nil {
-		return reply(ctx, nil, docErr)
+		return noDocFound(ctx, reply, params.TextDocument.URI)
 	}
 
 	notification := h.notifcationFromGno(ctx, h.connPool, doc)
@@ -47,7 +47,7 @@ func (h *handler) handleTextDocumentDidSave(ctx context.Context, reply jsonrpc2.
 
 	doc, ok := h.documents.Get(params.TextDocument.URI)
 	if !ok {
-		return noDocFound(params.TextDocument.URI)
+		return noDocFound(ctx, reply, params.TextDocument.URI)
 	}
 
 	notification := h.notifcationFromGno(ctx, h.connPool, doc)
@@ -65,7 +65,7 @@ func (h *handler) handleTextDocumentDidChange(ctx context.Context, reply jsonrpc
 
 	doc, ok := h.documents.Get(params.TextDocument.URI)
 	if !ok {
-		return noDocFound(params.TextDocument.URI)
+		return noDocFound(ctx, reply, params.TextDocument.URI)
 	}
 	doc.ApplyChanges(params.ContentChanges)
 
