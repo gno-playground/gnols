@@ -51,6 +51,12 @@ func symbolToKind(symbol string) protocol.CompletionItemKind {
 		return protocol.CompletionItemKindClass
 	case "var":
 		return protocol.CompletionItemKindVariable
+	case "struct":
+		return protocol.CompletionItemKindStruct
+	case "interface":
+		return protocol.CompletionItemKindInterface
+	case "package":
+		return protocol.CompletionItemKindModule
 	default:
 		return protocol.CompletionItemKindText
 	}
