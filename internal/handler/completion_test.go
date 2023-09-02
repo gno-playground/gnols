@@ -2,7 +2,7 @@ package handler
 
 import "testing"
 
-func TestLookup(t *testing.T) {
+func TestLookupPkg(t *testing.T) {
 	pkg := lookupPkg("fmt")
 	if pkg != nil {
 		t.Errorf("Expected nil, got %v", pkg)
