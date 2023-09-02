@@ -68,10 +68,6 @@ func (h *handler) handleInitialize(ctx context.Context, reply jsonrpc2.Replier, 
 		return err
 	}
 
-	if len(params.WorkspaceFolders) == 0 {
-		return errors.New("length WorkspaceFolders is 0")
-	}
-
 	initOptions, ok := params.InitializationOptions.(map[string]interface{})
 	if !ok {
 		return errors.New("InitializationOptions is not a map")
