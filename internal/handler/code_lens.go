@@ -38,7 +38,7 @@ func (h *handler) handleCodeLens(ctx context.Context, reply jsonrpc2.Replier, re
 
 	err := json.Unmarshal(req.Params(), &params)
 	if err != nil {
-		return err
+		return badJSON(ctx, reply, err)
 	}
 	items := []protocol.CodeLens{}
 

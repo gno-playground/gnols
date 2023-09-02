@@ -16,7 +16,7 @@ func (h *handler) handleExecuteCommand(ctx context.Context, reply jsonrpc2.Repli
 	if req.Params() == nil {
 		return &jsonrpc2.Error{Code: jsonrpc2.InvalidParams}
 	} else if err := json.Unmarshal(req.Params(), &params); err != nil {
-		return err
+		return badJSON(ctx, reply, err)
 	}
 	slog.Info("execute_command", "command", params.Command)
 

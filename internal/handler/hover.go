@@ -18,7 +18,7 @@ func (h *handler) handleHover(ctx context.Context, reply jsonrpc2.Replier, req j
 	if req.Params() == nil {
 		return &jsonrpc2.Error{Code: jsonrpc2.InvalidParams}
 	} else if err := json.Unmarshal(req.Params(), &params); err != nil {
-		return err
+		return badJSON(ctx, reply, err)
 	}
 
 	doc, ok := h.documents.Get(params.TextDocument.URI)

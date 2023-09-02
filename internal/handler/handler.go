@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"log/slog"
 
 	"go.lsp.dev/jsonrpc2"
@@ -65,12 +64,12 @@ func (h *handler) handleInitialize(ctx context.Context, reply jsonrpc2.Replier, 
 	var params protocol.InitializeParams
 
 	if err := json.Unmarshal(req.Params(), &params); err != nil {
-		return err
+		return badJSON(ctx, reply, err)
 	}
 
 	initOptions, ok := params.InitializationOptions.(map[string]interface{})
 	if !ok {
-		return errors.New("InitializationOptions is not a map")
+		return badInitParams(ctx, reply, nil)
 	}
 
 	gnoBin, _ := initOptions["gno"].(string)
@@ -79,7 +78,7 @@ func (h *handler) handleInitialize(ctx context.Context, reply jsonrpc2.Replier, 
 
 	h.binManager, initErr = gno.NewBinManager(gnoBin, gnokey, gnofmt)
 	if initErr != nil {
-		return initErr
+		return reply(ctx, nil, initErr)
 	}
 	slog.Info("InitializationOptions", "bin", gnoBin, "fmt", gnofmt)
 
