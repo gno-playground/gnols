@@ -4,25 +4,23 @@ import (
 	"errors"
 	"fmt"
 	"go/format"
-	"log/slog"
 	"os/exec"
 
 	"github.com/jdkato/gnols/internal/store"
 )
 
 var (
-	ErrNoGno    = errors.New("no gno binary found")
-	ErrNoGnokey = errors.New("no gnokey binary found")
-	ErrNoGnofmt = errors.New("no fmt binary found")
+	ErrNoGno = errors.New("no gno binary found")
 )
 
 // BinManager is a wrapper for the gno binary and related tooling.
 //
 // TODO: Should we install / update our own copy of gno?
 type BinManager struct {
-	gno    string
-	gnokey string
-	gnofmt string
+	gno              string // path to gno binary
+	gnokey           string // path to gnokey binary
+	shouldPrecompile bool   // whether to precompile on save
+	shouldBuild      bool   // whether to build on save
 }
 
 // BuildError is an error returned by the `gno build` command.
@@ -39,8 +37,13 @@ type BuildError struct {
 // If the user does not provide a path to the required binaries, we search the
 // user's PATH for them.
 //
-// NOTE: Unlike `gnoBin`, `gnokey` and `gnofmt` are optional.
-func NewBinManager(gno, gnokey, formatter string) (*BinManager, error) {
+// `gno`: The path to the `gno` binary.
+// `gnokey`: The path to the `gnokey` binary.
+// `precompile`: Whether to precompile Gno files on save.
+// `build`: Whether to build Gno files on save.
+//
+// NOTE: Unlike `gnoBin`, `gnokey` is optional.
+func NewBinManager(gno, gnokey string, precompile, build bool) (*BinManager, error) {
 	var err error
 
 	gnoBin := gno
@@ -56,15 +59,11 @@ func NewBinManager(gno, gnokey, formatter string) (*BinManager, error) {
 		gnokeyBin, _ = exec.LookPath("gnokey")
 	}
 
-	formatterBin := formatter
-	if formatterBin == "" {
-		formatterBin, _ = exec.LookPath("gofumpt")
-	}
-
 	return &BinManager{
-		gno:    gnoBin,
-		gnokey: gnokeyBin,
-		gnofmt: formatterBin,
+		gno:              gnoBin,
+		gnokey:           gnokeyBin,
+		shouldPrecompile: precompile,
+		shouldBuild:      build,
 	}, nil
 }
 
@@ -121,10 +120,13 @@ func (m *BinManager) RunTest(pkg, name string) ([]byte, error) {
 // TODO: is this the best way?
 func (m *BinManager) Lint(doc *store.Document) ([]BuildError, error) {
 	pkg := pkgFromFile(doc.Path)
-	slog.Info("Lint", "pkg", pkg)
+
+	if !m.shouldPrecompile {
+		return []BuildError{}, nil
+	}
 
 	preOut, _ := m.Precompile(pkg)
-	if len(preOut) > 0 {
+	if len(preOut) > 0 || !m.shouldBuild {
 		return parseError(doc, string(preOut), "precompile")
 	}
 

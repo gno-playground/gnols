@@ -54,33 +54,19 @@ func (h *handler) handle(ctx context.Context, reply jsonrpc2.Replier, req jsonrp
 		return h.handleExecuteCommand(ctx, reply, req)
 	case protocol.MethodTextDocumentFormatting:
 		return h.handleTextDocumentFormatting(ctx, reply, req)
+	case protocol.MethodWorkspaceDidChangeConfiguration:
+		return h.handleDidChangeConfiguration(ctx, reply, req)
 	default:
 		return jsonrpc2.MethodNotFoundHandler(ctx, reply, req)
 	}
 }
 
 func (h *handler) handleInitialize(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) error {
-	var initErr error
 	var params protocol.InitializeParams
 
 	if err := json.Unmarshal(req.Params(), &params); err != nil {
 		return badJSON(ctx, reply, err)
 	}
-
-	initOptions, ok := params.InitializationOptions.(map[string]interface{})
-	if !ok {
-		return badInitParams(ctx, reply, nil)
-	}
-
-	gnoBin, _ := initOptions["gno"].(string)
-	gnokey, _ := initOptions["gnokey"].(string)
-	gnofmt, _ := initOptions["gnofmt"].(string)
-
-	h.binManager, initErr = gno.NewBinManager(gnoBin, gnokey, gnofmt)
-	if initErr != nil {
-		return reply(ctx, nil, initErr)
-	}
-	slog.Info("InitializationOptions", "bin", gnoBin, "fmt", gnofmt)
 
 	return reply(ctx, protocol.InitializeResult{
 		Capabilities: protocol.ServerCapabilities{
@@ -110,6 +96,6 @@ func (h *handler) handleInitialize(ctx context.Context, reply jsonrpc2.Replier, 
 	}, nil)
 }
 
-func (h *handler) handleShutdown(_ context.Context, _ jsonrpc2.Replier, _ jsonrpc2.Request) error {
-	return h.connPool.Close()
+func (h *handler) handleShutdown(ctx context.Context, reply jsonrpc2.Replier, _ jsonrpc2.Request) error {
+	return reply(ctx, nil, h.connPool.Close())
 }

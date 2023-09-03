@@ -23,6 +23,11 @@ func (h *handler) handleTextDocumentFormatting(ctx context.Context, reply jsonrp
 		return noDocFound(ctx, reply, params.TextDocument.URI)
 	}
 
+	if h.binManager == nil {
+		slog.Warn("diagnostics", "no bin manager", h.binManager)
+		return reply(ctx, []protocol.TextEdit{}, nil)
+	}
+
 	formatted, err := h.binManager.Format(doc.Content)
 	if err != nil {
 		slog.Error("formatting", "error", err, "text", formatted)

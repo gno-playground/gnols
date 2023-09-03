@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewManager(t *testing.T) {
-	mgr, _ := gno.NewBinManager("", "", "")
+	mgr, _ := gno.NewBinManager("", "", false, false)
 	if mgr != nil {
 		t.Logf("gno bin: %s", mgr.GnoBin())
 	} else {
