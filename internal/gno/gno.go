@@ -121,7 +121,7 @@ func (m *BinManager) RunTest(pkg, name string) ([]byte, error) {
 func (m *BinManager) Lint(doc *store.Document) ([]BuildError, error) {
 	pkg := pkgFromFile(doc.Path)
 
-	if !m.shouldPrecompile {
+	if !m.shouldPrecompile && !m.shouldBuild {
 		return []BuildError{}, nil
 	}
 

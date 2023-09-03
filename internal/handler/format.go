@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
+	"unicode/utf8"
 
 	"go.lsp.dev/jsonrpc2"
 	"go.lsp.dev/protocol"
@@ -27,6 +28,7 @@ func (h *handler) handleTextDocumentFormatting(ctx context.Context, reply jsonrp
 		slog.Warn("diagnostics", "no bin manager", h.binManager)
 		return reply(ctx, []protocol.TextEdit{}, nil)
 	}
+	slog.Info("formatting", "pre", doc.Content)
 
 	formatted, err := h.binManager.Format(doc.Content)
 	if err != nil {
@@ -34,17 +36,19 @@ func (h *handler) handleTextDocumentFormatting(ctx context.Context, reply jsonrp
 		return reply(ctx, nil, err)
 	}
 
-	slog.Info("formatting", "uri", params.TextDocument.URI)
+	slog.Info("formatting", "post", formatted)
+
+	lastLine := len(doc.Lines) - 1
+	lastChar := utf8.RuneCountInString(doc.Lines[lastLine])
+
+	slog.Info("formatting", "lastLine", lastLine, "lastChar", lastChar)
 	return reply(ctx, []protocol.TextEdit{
 		{
 			Range: protocol.Range{
-				Start: protocol.Position{
-					Line:      0,
-					Character: 0,
-				},
+				Start: protocol.Position{Line: 0, Character: 0},
 				End: protocol.Position{
-					Line:      uint32(len(doc.Lines) - 1),
-					Character: uint32(len(doc.Lines[len(doc.Lines)-1]) - 1),
+					Line:      uint32(lastLine),
+					Character: uint32(lastChar),
 				},
 			},
 			NewText: string(formatted),
