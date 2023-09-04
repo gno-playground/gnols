@@ -52,9 +52,16 @@ func (d *Document) LookupSymbol(name string, offset int) (*stdlib.Symbol, error)
 	}
 
 	pkg, _ := conf.Check(d.Path, d.Pgf.FileSet, []*ast.File{d.Pgf.File}, info)
+	if pkg == nil || pkg.Scope() == nil {
+		return nil, nil
+	}
 	pos := d.Pgf.FileSet.File(d.Pgf.File.Pos()).Pos(offset)
 
 	inner := pkg.Scope().Innermost(pos)
+	if inner == nil {
+		return nil, nil
+	}
+
 	if obj := inner.Lookup(name); obj != nil {
 		typeName := obj.Type().String()
 		if !strings.Contains(typeName, "invalid") {
