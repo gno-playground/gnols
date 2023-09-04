@@ -66,9 +66,13 @@ func (h *handler) handleHover(ctx context.Context, reply jsonrpc2.Replier, req j
 	if len(parts) == 2 {
 		pkg := parts[0]
 		sym := parts[1]
-		slog.Info("hover", "pkg", pkg, "sym", sym)
 
+		slog.Info("hover", "pkg", pkg, "sym", sym)
 		found := lookupSymbol(pkg, sym)
+		if found == nil {
+			found = lookupSymbolByImports(sym, pgf.File.Imports)
+		}
+
 		if found != nil {
 			return reply(ctx, protocol.Hover{
 				Contents: protocol.MarkupContent{

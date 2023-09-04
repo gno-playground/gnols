@@ -205,26 +205,24 @@ func declaration(n ast.Node, source string) []stdlib.Symbol {
 
 func function(n ast.Node, source string) []stdlib.Symbol {
 	sym, _ := n.(*ast.FuncDecl)
-	if sym.Recv == nil {
-		// bufio. (NewReaderSize, ...)
-		//
-		// We will know this and can perform a lookup on the symbol table.
-		return []stdlib.Symbol{{
-			Name:      sym.Name.Name,
-			Doc:       sym.Doc.Text(),
-			Signature: strings.Split(source[sym.Pos()-1:sym.End()-1], " {")[0],
-			Kind:      "func",
-		}}
-	}
+	return []stdlib.Symbol{{
+		Name:      sym.Name.Name,
+		Doc:       sym.Doc.Text(),
+		Signature: strings.Split(source[sym.Pos()-1:sym.End()-1], " {")[0],
+		Kind:      "func",
+	}}
 
-	// myReader := bufio.NewReaderSize(...)
+	// sym.Recv != nil
 	//
-	// We won't know what the type of myReader is ...
-	//
-	// root := sym.Recv.List[0].Type.(*ast.StarExpr).X.(*ast.Ident).Name
-	// fmt.Println(sym.Name.Name, "(", root, ")")
-
-	return nil
+	// root, starOk := sym.Recv.List[0].Type.(*ast.StarExpr)
+	// if !starOk {
+	// 	return nil
+	// }
+	// ident, idOk := root.X.(*ast.Ident)
+	// if !idOk {
+	// 	return nil
+	// }
+	// fmt.Println(sym.Name.Name, "(", ident.Name, ")")
 }
 
 func typeName(t ast.TypeSpec) string {

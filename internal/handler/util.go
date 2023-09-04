@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"go/ast"
+	"strings"
+
 	"go.lsp.dev/protocol"
 
 	"github.com/jdkato/gnols/internal/stdlib"
@@ -29,6 +32,22 @@ func lookupSymbol(pkg, symbol string) *stdlib.Symbol {
 			}
 		}
 	}
+	return nil
+}
+
+func lookupSymbolByImports(symbol string, imports []*ast.ImportSpec) *stdlib.Symbol {
+	for _, spec := range imports {
+		value := spec.Path.Value
+
+		value = value[1 : len(value)-1]                 // remove quotes
+		value = value[strings.LastIndex(value, "/")+1:] // get last part
+
+		s := lookupSymbol(value, symbol)
+		if s != nil {
+			return s
+		}
+	}
+
 	return nil
 }
 
