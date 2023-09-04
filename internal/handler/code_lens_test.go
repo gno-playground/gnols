@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -15,7 +16,12 @@ func TestCodeLensFind(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pgf, parseErr := store.NewParsedGnoFile(filePath)
+	dat, err := os.ReadFile(filePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pgf, parseErr := store.NewParsedGnoFile(filePath, string(dat))
 	if parseErr != nil {
 		t.Fatal(parseErr)
 	}
