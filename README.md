@@ -15,6 +15,10 @@ that supports the Language Server Protocol.
 ## Installation
 
 - [x] [Sublime Text][3]
+- [ ] Neovim
+- [ ] GoLand
+- [ ] Emacs
+- [ ] VS Code
 
 ## Features
 
