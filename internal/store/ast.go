@@ -43,7 +43,7 @@ func (d *Document) ApplyChangesToAst(path string) {
 	d.Pgf = &ParsedGnoFile{File: file}
 }
 
-func (d *Document) LookupSymbol(name string, offset int) (*stdlib.Symbol, error) {
+func (d *Document) LookupSymbol(name string, offset int) *stdlib.Symbol {
 	conf := types.Config{Importer: importer.Default(), Error: func(err error) { slog.Info(err.Error()) }}
 	info := &types.Info{
 		Defs:  make(map[*ast.Ident]types.Object),
@@ -53,13 +53,13 @@ func (d *Document) LookupSymbol(name string, offset int) (*stdlib.Symbol, error)
 
 	pkg, _ := conf.Check(d.Path, d.Pgf.FileSet, []*ast.File{d.Pgf.File}, info)
 	if pkg == nil || pkg.Scope() == nil {
-		return nil, nil
+		return nil
 	}
 	pos := d.Pgf.FileSet.File(d.Pgf.File.Pos()).Pos(offset)
 
 	inner := pkg.Scope().Innermost(pos)
 	if inner == nil {
-		return nil, nil
+		return nil
 	}
 
 	if obj := inner.Lookup(name); obj != nil {
@@ -71,9 +71,9 @@ func (d *Document) LookupSymbol(name string, offset int) (*stdlib.Symbol, error)
 				Name:      obj.Name(),
 				Signature: obj.String(),
 				Kind:      obj.Type().String(),
-			}, nil
+			}
 		}
 	}
 
-	return nil, nil
+	return nil
 }

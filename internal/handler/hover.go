@@ -87,20 +87,5 @@ func (h *handler) handleHover(ctx context.Context, reply jsonrpc2.Replier, req j
 		}
 	}
 
-	/*
-		s, err := doc.LookupSymbol(text, offset)
-		if s != nil && err == nil {
-			return reply(ctx, protocol.Hover{
-				Contents: protocol.MarkupContent{
-					Kind:  protocol.Markdown,
-					Value: s.String(),
-				},
-				Range: posToRange(
-					int(params.Position.Line),
-					[]int{token.Start, token.End},
-				),
-			}, nil)
-		}*/
-
 	return reply(ctx, nil, err)
 }
