@@ -3,6 +3,7 @@ package store
 import (
 	"errors"
 	"strings"
+	"unicode/utf8"
 
 	"go.lsp.dev/protocol"
 )
@@ -50,6 +51,17 @@ func (d *Document) SpanToRange(start, _ int) protocol.Range {
 			Character: 1,
 		},
 	}
+}
+
+func (d *Document) PositionToOffset(pos protocol.Position) int {
+	offset := 0
+	for i, l := range d.Lines {
+		if i == int(pos.Line) {
+			break
+		}
+		offset += utf8.RuneCountInString(l)
+	}
+	return offset + int(pos.Character)
 }
 
 func (d *Document) TokenAt(pos protocol.Position) (*HoveredToken, error) {

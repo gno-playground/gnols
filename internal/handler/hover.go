@@ -25,6 +25,21 @@ func (h *handler) handleHover(ctx context.Context, reply jsonrpc2.Replier, req j
 	if !ok {
 		return noDocFound(ctx, reply, params.TextDocument.URI)
 	}
+	pgf := doc.Pgf
+
+	offset := doc.PositionToOffset(params.Position)
+	// tokedf := pgf.FileSet.AddFile(doc.Path, -1, len(doc.Content))
+	// target := tokedf.Pos(offset)
+
+	slog.Info("hover", "offset", offset)
+	for _, spec := range pgf.File.Imports {
+		slog.Info("hover", "spec", spec.Path.Value, "pos", spec.Path.Pos(), "end", spec.Path.End())
+		if int(spec.Path.Pos()) <= offset && offset <= int(spec.Path.End()) {
+			// TODO: handle hover for imports
+			slog.Info("hover", "import", spec.Path.Value)
+			return reply(ctx, nil, nil)
+		}
+	}
 
 	token, err := doc.TokenAt(params.Position)
 	if err != nil {
