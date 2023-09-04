@@ -69,7 +69,7 @@ func (h *handler) handleHover(ctx context.Context, reply jsonrpc2.Replier, req j
 
 		slog.Info("hover", "pkg", pkg, "sym", sym)
 		found := lookupSymbol(pkg, sym)
-		if found == nil {
+		if found == nil && pgf.File != nil {
 			found = lookupSymbolByImports(sym, pgf.File.Imports)
 		}
 
@@ -85,6 +85,20 @@ func (h *handler) handleHover(ctx context.Context, reply jsonrpc2.Replier, req j
 				),
 			}, nil)
 		}
+	}
+
+	s, err := doc.LookupSymbol(text, offset)
+	if s != nil && err == nil {
+		return reply(ctx, protocol.Hover{
+			Contents: protocol.MarkupContent{
+				Kind:  protocol.Markdown,
+				Value: s.String(),
+			},
+			Range: posToRange(
+				int(params.Position.Line),
+				[]int{token.Start, token.End},
+			),
+		}, nil)
 	}
 
 	return reply(ctx, nil, err)

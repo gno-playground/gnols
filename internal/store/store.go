@@ -29,7 +29,7 @@ func (s *DocumentStore) DidOpen(params protocol.DidOpenTextDocumentParams) (*Doc
 		return nil, err
 	}
 
-	pgf, parseErr := NewParsedGnoFile(path)
+	pgf, parseErr := NewParsedGnoFile(path, params.TextDocument.Text)
 	if parseErr != nil {
 		slog.Warn("parse_err", "err", parseErr)
 	}
