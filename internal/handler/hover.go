@@ -28,8 +28,8 @@ func (h *handler) handleHover(ctx context.Context, reply jsonrpc2.Replier, req j
 	pgf := doc.Pgf
 
 	offset := doc.PositionToOffset(params.Position)
-	// tokedf := pgf.FileSet.AddFile(doc.Path, -1, len(doc.Content))
-	// target := tokedf.Pos(offset)
+	tokedf := pgf.FileSet.AddFile(doc.Path, -1, len(doc.Content))
+	target := tokedf.Pos(offset)
 
 	slog.Info("hover", "offset", offset)
 	for _, spec := range pgf.File.Imports {
@@ -40,6 +40,16 @@ func (h *handler) handleHover(ctx context.Context, reply jsonrpc2.Replier, req j
 			return reply(ctx, nil, nil)
 		}
 	}
+
+	// The general case: compute hover information for the object referenced by
+	// the identifier at pos.
+	ident, obj, selectedType := doc.ReferencedObject(target)
+	if obj == nil || ident == nil {
+		return reply(ctx, nil, nil) // no object
+	}
+	//rng := posToRange(int(params.Position.Line), []int{int(ident.Pos()), int(ident.End())})
+
+	slog.Info("hover", "obj", obj, "type", selectedType, "ident", ident.Name)
 
 	token, err := doc.TokenAt(params.Position)
 	if err != nil {
