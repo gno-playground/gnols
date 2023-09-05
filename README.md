@@ -15,7 +15,7 @@ that supports the Language Server Protocol.
 ## Installation
 
 - [x] [Sublime Text][3]
-- [ ] Neovim
+- [x] [Neovim][4]
 - [ ] GoLand
 - [ ] Emacs
 - [ ] VS Code
@@ -74,3 +74,4 @@ that supports the Language Server Protocol.
 [1]: https://microsoft.github.io/language-server-protocol/
 [2]: https://gno.land/
 [3]: https://github.com/jdkato/LSP-gnols
+[4]: https://dev.to/jdkato/setting-up-neovim-for-gno-development-1a6d
