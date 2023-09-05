@@ -205,12 +205,14 @@ func declaration(n ast.Node, source string) []stdlib.Symbol {
 
 func function(n ast.Node, source string) []stdlib.Symbol {
 	sym, _ := n.(*ast.FuncDecl)
-	return []stdlib.Symbol{{
-		Name:      sym.Name.Name,
-		Doc:       sym.Doc.Text(),
-		Signature: strings.Split(source[sym.Pos()-1:sym.End()-1], " {")[0],
-		Kind:      "func",
-	}}
+	if sym.Recv == nil {
+		return []stdlib.Symbol{{
+			Name:      sym.Name.Name,
+			Doc:       sym.Doc.Text(),
+			Signature: strings.Split(source[sym.Pos()-1:sym.End()-1], " {")[0],
+			Kind:      "func",
+		}}
+	}
 
 	// sym.Recv != nil
 	//
@@ -223,6 +225,8 @@ func function(n ast.Node, source string) []stdlib.Symbol {
 	// 	return nil
 	// }
 	// fmt.Println(sym.Name.Name, "(", ident.Name, ")")
+	//
+	return []stdlib.Symbol{}
 }
 
 func typeName(t ast.TypeSpec) string {
