@@ -91,13 +91,22 @@ func walkPkg(path string) []string {
 	err := filepath.WalkDir(path, func(file string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
-		} else if !d.IsDir() && !strings.Contains(file, "_test") {
+		}
+
+		if d.IsDir() {
+			return nil
+		}
+
+		if !strings.Contains(file, "_test") {
 			ext := filepath.Ext(file)
 			if ext != ".gno" {
+				return nil
+			} else if filepath.Dir(file) != path {
 				return nil
 			}
 			files = append(files, file)
 		}
+
 		return nil
 	})
 
@@ -205,28 +214,24 @@ func declaration(n ast.Node, source string) []stdlib.Symbol {
 
 func function(n ast.Node, source string) []stdlib.Symbol {
 	sym, _ := n.(*ast.FuncDecl)
-	if sym.Recv == nil {
-		return []stdlib.Symbol{{
-			Name:      sym.Name.Name,
-			Doc:       sym.Doc.Text(),
-			Signature: strings.Split(source[sym.Pos()-1:sym.End()-1], " {")[0],
-			Kind:      "func",
-		}}
-	}
+	return []stdlib.Symbol{{
+		Name:      sym.Name.Name,
+		Doc:       sym.Doc.Text(),
+		Signature: strings.Split(source[sym.Pos()-1:sym.End()-1], " {")[0],
+		Kind:      "func",
+	}}
 
 	// sym.Recv != nil
 	//
 	// root, starOk := sym.Recv.List[0].Type.(*ast.StarExpr)
 	// if !starOk {
-	// 	return nil
+	//  return nil
 	// }
 	// ident, idOk := root.X.(*ast.Ident)
 	// if !idOk {
-	// 	return nil
+	//  return nil
 	// }
 	// fmt.Println(sym.Name.Name, "(", ident.Name, ")")
-	//
-	return []stdlib.Symbol{}
 }
 
 func typeName(t ast.TypeSpec) string {
