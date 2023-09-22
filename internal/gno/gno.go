@@ -1,11 +1,14 @@
 package gno
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"go/format"
 	"os/exec"
+	"regexp"
 
+	"github.com/jdkato/gnols/internal/stdlib"
 	"github.com/jdkato/gnols/internal/store"
 )
 
@@ -13,12 +16,15 @@ var (
 	ErrNoGno = errors.New("no gno binary found")
 )
 
+var goplsDefRe = regexp.MustCompile(`(?ms)(.+) defined here as ([^\n]+)\n(.+)`)
+
 // BinManager is a wrapper for the gno binary and related tooling.
 //
 // TODO: Should we install / update our own copy of gno?
 type BinManager struct {
 	gno              string // path to gno binary
 	gnokey           string // path to gnokey binary
+	gopls            string // path to gopls binary
 	shouldPrecompile bool   // whether to precompile on save
 	shouldBuild      bool   // whether to build on save
 }
@@ -59,9 +65,11 @@ func NewBinManager(gno, gnokey string, precompile, build bool) (*BinManager, err
 		gnokeyBin, _ = exec.LookPath("gnokey")
 	}
 
+	gopls, _ := exec.LookPath("gopls")
 	return &BinManager{
 		gno:              gnoBin,
 		gnokey:           gnokeyBin,
+		gopls:            gopls,
 		shouldPrecompile: precompile,
 		shouldBuild:      build,
 	}, nil
@@ -72,6 +80,11 @@ func NewBinManager(gno, gnokey string, precompile, build bool) (*BinManager, err
 // This is either user-provided or found on the user's PATH.
 func (m *BinManager) GnoBin() string {
 	return m.gno
+}
+
+// Gopls returns the path to the `gopls` binary.
+func (m *BinManager) Gopls() string {
+	return m.gopls
 }
 
 // Format a Gno file using std formatter.
@@ -132,4 +145,37 @@ func (m *BinManager) Lint(doc *store.Document) ([]BuildError, error) {
 
 	buildOut, _ := m.Build(pkg)
 	return parseError(doc, string(buildOut), "build")
+}
+
+// Definition returns the definition of the symbol at the given position
+// using the `gopls` tool.
+//
+// TODO:
+//
+// * invalid types
+// * function calls
+func (m *BinManager) Definition(path string, line, col uint32) (stdlib.Symbol, error) {
+	var buf bytes.Buffer
+
+	// Location is 1-based and shifted down 4 lines.
+	target := fmt.Sprintf("%s.gen.go:%d:%d", path, line+5, col+1)
+
+	cmd := exec.Command(m.gopls, "definition", target) //nolint:gosec
+	cmd.Stdout = &buf
+
+	err := cmd.Run()
+	if err != nil {
+		return stdlib.Symbol{}, err
+	}
+
+	matches := goplsDefRe.FindStringSubmatch(buf.String())
+	if len(matches) != 4 {
+		return stdlib.Symbol{}, fmt.Errorf("invalid gopls output: %s", buf.String())
+	}
+
+	return stdlib.Symbol{
+		Name:      "",
+		Signature: matches[2],
+		Doc:       matches[3],
+	}, nil
 }
