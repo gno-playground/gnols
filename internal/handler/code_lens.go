@@ -80,7 +80,7 @@ func addTestCmds(gnoBin, path string, tAndB testFns) []protocol.CodeLens {
 	cmds = append(cmds, newHeaderCmd(
 		"run package tests",
 		"gnols.test",
-		[]interface{}{gnoBin, path, ""},
+		[]interface{}{path, "*"},
 	))
 
 	inFile := []string{}
@@ -91,7 +91,7 @@ func addTestCmds(gnoBin, path string, tAndB testFns) []protocol.CodeLens {
 			Command: &protocol.Command{
 				Title:     "run test",
 				Command:   "gnols.test",
-				Arguments: []interface{}{gnoBin, path, fn.Name},
+				Arguments: []interface{}{path, fn.Name},
 			},
 		})
 	}
@@ -99,7 +99,7 @@ func addTestCmds(gnoBin, path string, tAndB testFns) []protocol.CodeLens {
 	cmds = append(cmds, newHeaderCmd(
 		"run file tests",
 		"gnols.test",
-		[]interface{}{gnoBin, path, strings.Join(inFile, "|")},
+		[]interface{}{path, strings.Join(inFile, "|")},
 	))
 
 	return cmds
@@ -114,7 +114,7 @@ func addBenchCmds(gnoBin, path string, tAndB testFns) []protocol.CodeLens {
 	cmds = append(cmds, newHeaderCmd(
 		"run package benchmarks",
 		"gnols.bench",
-		[]interface{}{gnoBin, path, ""},
+		[]interface{}{path, ""},
 	))
 
 	inFile := []string{}
@@ -125,7 +125,7 @@ func addBenchCmds(gnoBin, path string, tAndB testFns) []protocol.CodeLens {
 			Command: &protocol.Command{
 				Title:     "run benchmark",
 				Command:   "gnols.bench",
-				Arguments: []interface{}{gnoBin, path, fn.Name},
+				Arguments: []interface{}{path, fn.Name},
 			},
 		})
 	}
@@ -133,7 +133,7 @@ func addBenchCmds(gnoBin, path string, tAndB testFns) []protocol.CodeLens {
 	cmds = append(cmds, newHeaderCmd(
 		"run file benchmarks",
 		"gnols.bench",
-		[]interface{}{gnoBin, path, strings.Join(inFile, "|")},
+		[]interface{}{path, strings.Join(inFile, "|")},
 	))
 
 	return cmds

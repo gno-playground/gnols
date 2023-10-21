@@ -18,7 +18,7 @@ func (h *handler) handleExecuteCommand(ctx context.Context, reply jsonrpc2.Repli
 	} else if err := json.Unmarshal(req.Params(), &params); err != nil {
 		return badJSON(ctx, reply, err)
 	}
-	slog.Info("execute_command", "command", params.Command)
+	slog.Info("execute_command", "command", params.Command, "args", params.Arguments)
 
 	switch params.Command { //nolint:gocritic
 	case "gnols.test":
