@@ -30,7 +30,8 @@ func (h *handler) handleDidChangeConfiguration(ctx context.Context, reply jsonrp
 
 	precompile, _ := settings["precompileOnSave"].(bool)
 	build, _ := settings["buildOnSave"].(bool)
+	root, _ := settings["root"].(string)
 
-	h.binManager, err = gno.NewBinManager(gnoBin, gnokey, precompile, build)
+	h.binManager, err = gno.NewBinManager(gnoBin, gnokey, root, precompile, build)
 	return reply(ctx, nil, err)
 }
