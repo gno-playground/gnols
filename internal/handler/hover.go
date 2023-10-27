@@ -9,7 +9,7 @@ import (
 	"go.lsp.dev/jsonrpc2"
 	"go.lsp.dev/protocol"
 
-	"github.com/jdkato/gnols/internal/stdlib"
+	"github.com/gno-playground/gnols/internal/stdlib"
 )
 
 func (h *handler) handleHover(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) error {

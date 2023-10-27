@@ -1,4 +1,4 @@
-module github.com/jdkato/gnols
+module github.com/gno-playground/gnols
 
 go 1.21
 

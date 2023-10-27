@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jdkato/gnols/internal/stdlib"
+	"github.com/gno-playground/gnols/internal/stdlib"
 )
 
 var buildOutput = "internal/stdlib/stdlib"

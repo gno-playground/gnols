@@ -9,7 +9,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/jdkato/gnols/internal/stdlib"
+	"github.com/gno-playground/gnols/internal/stdlib"
 )
 
 // A ParsedGnoFile contains the results of parsing a Gno file.
