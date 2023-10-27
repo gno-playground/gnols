@@ -6,7 +6,7 @@ import (
 
 	"go.lsp.dev/protocol"
 
-	"github.com/jdkato/gnols/internal/stdlib"
+	"github.com/gno-playground/gnols/internal/stdlib"
 )
 
 func posToRange(line int, span []int) *protocol.Range {

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jdkato/gnols/internal/store"
+	"github.com/gno-playground/gnols/internal/store"
 )
 
 // This is used to extract information from the `gno build` command

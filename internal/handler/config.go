@@ -8,7 +8,7 @@ import (
 	"go.lsp.dev/jsonrpc2"
 	"go.lsp.dev/protocol"
 
-	"github.com/jdkato/gnols/internal/gno"
+	"github.com/gno-playground/gnols/internal/gno"
 )
 
 func (h *handler) handleDidChangeConfiguration(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) error {

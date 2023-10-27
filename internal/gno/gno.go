@@ -8,8 +8,8 @@ import (
 	"os/exec"
 	"regexp"
 
-	"github.com/jdkato/gnols/internal/stdlib"
-	"github.com/jdkato/gnols/internal/store"
+	"github.com/gno-playground/gnols/internal/stdlib"
+	"github.com/gno-playground/gnols/internal/store"
 )
 
 var (

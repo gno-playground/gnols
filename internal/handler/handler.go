@@ -8,8 +8,8 @@ import (
 	"go.lsp.dev/jsonrpc2"
 	"go.lsp.dev/protocol"
 
-	"github.com/jdkato/gnols/internal/gno"
-	"github.com/jdkato/gnols/internal/store"
+	"github.com/gno-playground/gnols/internal/gno"
+	"github.com/gno-playground/gnols/internal/store"
 )
 
 type handler struct {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jdkato/gnols/internal/handler"
+	"github.com/gno-playground/gnols/internal/handler"
 	"go.lsp.dev/jsonrpc2"
 )
 

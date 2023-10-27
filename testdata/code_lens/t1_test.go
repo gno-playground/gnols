@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/errata-ai/vale/v2/internal/core"
-	"github.com/jdkato/regexp"
+	"github.com/gno-playground/regexp"
 )
 
 func TestGenderBias(t *testing.T) {

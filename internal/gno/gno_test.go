@@ -3,7 +3,7 @@ package gno_test
 import (
 	"testing"
 
-	"github.com/jdkato/gnols/internal/gno"
+	"github.com/gno-playground/gnols/internal/gno"
 )
 
 func TestNewManager(t *testing.T) {

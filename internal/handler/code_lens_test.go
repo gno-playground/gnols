@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/jdkato/gnols/internal/store"
+	"github.com/gno-playground/gnols/internal/store"
 )
 
 const testDir = "../../testdata/code_lens"
