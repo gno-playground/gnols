@@ -25,6 +25,7 @@ type BinManager struct {
 	gno              string // path to gno binary
 	gnokey           string // path to gnokey binary
 	gopls            string // path to gopls binary
+	root             string // path to gno repository
 	shouldPrecompile bool   // whether to precompile on save
 	shouldBuild      bool   // whether to build on save
 }
@@ -45,11 +46,12 @@ type BuildError struct {
 //
 // `gno`: The path to the `gno` binary.
 // `gnokey`: The path to the `gnokey` binary.
+// `root`: The path to the `gno` repository
 // `precompile`: Whether to precompile Gno files on save.
 // `build`: Whether to build Gno files on save.
 //
 // NOTE: Unlike `gnoBin`, `gnokey` is optional.
-func NewBinManager(gno, gnokey string, precompile, build bool) (*BinManager, error) {
+func NewBinManager(gno, gnokey, root string, precompile, build bool) (*BinManager, error) {
 	var err error
 
 	gnoBin := gno
@@ -70,6 +72,7 @@ func NewBinManager(gno, gnokey string, precompile, build bool) (*BinManager, err
 		gno:              gnoBin,
 		gnokey:           gnokeyBin,
 		gopls:            gopls,
+		root:             root,
 		shouldPrecompile: precompile,
 		shouldBuild:      build,
 	}, nil
@@ -96,12 +99,11 @@ func (m *BinManager) Format(gnoFile string) ([]byte, error) {
 
 // Precompile a Gno package: gno precompile <dir>.
 func (m *BinManager) Precompile(gnoDir string) ([]byte, error) {
-	return exec.Command(m.gno, "precompile", gnoDir).CombinedOutput() //nolint:gosec
-}
-
-// Build a Gno package: gno build <dir>.
-func (m *BinManager) Build(gnoDir string) ([]byte, error) {
-	return exec.Command(m.gno, "build", gnoDir).CombinedOutput() //nolint:gosec
+	args := []string{"precompile", gnoDir}
+	if m.shouldBuild {
+		args = append(args, "-gobuild")
+	}
+	return exec.Command(m.gno, args...).CombinedOutput() //nolint:gosec
 }
 
 // RunTest runs a Gno test:
@@ -111,6 +113,9 @@ func (m *BinManager) RunTest(pkg, name string) ([]byte, error) {
 	cmd := exec.Command( //nolint:gosec
 		m.gno,
 		"test",
+		"-root-dir",
+		m.root,
+		"-verbose",
 		"-timeout",
 		"30s",
 		"-run",
@@ -126,7 +131,7 @@ func (m *BinManager) RunTest(pkg, name string) ([]byte, error) {
 // In practice, this means:
 //
 // 1. Precompile the file;
-// 2. build the file;
+// 2. build the file (using -gobuild precompile flag);
 // 3. parse the errors; and
 // 4. recompute the offsets (.go -> .gno).
 //
@@ -137,14 +142,8 @@ func (m *BinManager) Lint(doc *store.Document) ([]BuildError, error) {
 	if !m.shouldPrecompile && !m.shouldBuild {
 		return []BuildError{}, nil
 	}
-
 	preOut, _ := m.Precompile(pkg)
-	if len(preOut) > 0 || !m.shouldBuild {
-		return parseError(doc, string(preOut), "precompile")
-	}
-
-	buildOut, _ := m.Build(pkg)
-	return parseError(doc, string(buildOut), "build")
+	return parseError(doc, string(preOut), "precompile")
 }
 
 // Definition returns the definition of the symbol at the given position
